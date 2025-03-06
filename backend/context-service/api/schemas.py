@@ -1,7 +1,7 @@
 import importlib
 
 from apiflask import Schema
-from apiflask.fields import DateTime, Dict, Integer, String
+from apiflask.fields import DateTime, Dict, Integer, String, List, Nested
 from apiflask.validators import Length, OneOf
 from marshmallow import ValidationError, validates_schema
 
@@ -11,13 +11,19 @@ from .models import UseCaseModel
 class MetadataSchema(Schema):
     pass
 
+# workaround to expose schema in openapi.json: copy-paste from resources/Railway
+class MetadataSchemaRailway(MetadataSchema):
+    trains = List(Dict(), required=False)
+    list_of_target = Dict(required=False)
+    direction_agents = List(Integer(), required=False)
+    position_agents = Dict(required=False)
 
 class ContextIn(Schema):
     use_case = String(
         required=True, validate=OneOf(["PowerGrid", "Railway", "ATM"])
     )
     date = DateTime(format="iso")
-    data = Dict()
+    data = Nested(MetadataSchemaRailway)
 
     @validates_schema
     def validate_metadata(self, data, **kwargs):
@@ -45,7 +51,7 @@ class ContextOut(Schema):
     id_context = String()
     use_case = String()
     date = DateTime(format="iso")
-    data = Dict()
+    data = Nested(MetadataSchemaRailway)
 
 
 class UseCaseIn(Schema):

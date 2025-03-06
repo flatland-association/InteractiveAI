@@ -2,14 +2,29 @@ import importlib
 
 from api.models import UseCaseModel
 from apiflask import Schema
-from apiflask.fields import Boolean, DateTime, Dict, Integer, String
+from apiflask.fields import Boolean, DateTime, Dict, Integer, String, List, Float, Nested
 from apiflask.validators import Length, OneOf
 from marshmallow import ValidationError, validates_schema
-
 
 class MetadataSchema(Schema):
     pass
 
+# workaround to expose schema in openapi.json: copy-paste from resources/Railway
+class MetadataSchemaRailway(MetadataSchema):
+    agent_id = String(allow_none=True, required=True)
+    event_type = String(required=True)
+    agent_position = List(
+        Integer(allow_none=True), allow_none=True, default=None
+    )
+    delay = Integer(required=True)
+    id_train = String(allow_none=True, required=True)
+    malfunction_stop_position = List(Integer(allow_none=True), allow_none=True)
+    num_rame = String(allow_none=True, default=None)
+    tmp_rame = String(allow_none=True, default=None)
+    travel_plan = List(Dict(), allow_none=True)
+    longitude = Float(allow_none=True, default=None)
+    latitude = Float(allow_none=True, default=None)
+    simulation_name = String(allow_none=True, default=None)
 
 class EventIn(Schema):
     use_case = String(required=True, validate=Length(1, 255))
@@ -21,7 +36,7 @@ class EventIn(Schema):
         required=True,
         validate=OneOf(["ND", "HIGH", "MEDIUM", "LOW", "ROUTINE"]),
     )
-    data = Dict()
+    data = Nested(MetadataSchemaRailway)
     is_active = Boolean()
     parent_event_id = String(allow_none=True)
 
@@ -57,7 +72,7 @@ class EventOut(Schema):
     start_date = DateTime(format="iso", allow_none=True)
     end_date = DateTime(format="iso", allow_none=True)
     criticality = String()
-    data = Dict()
+    data = Nested(MetadataSchemaRailway)
     is_active = Boolean()
     parent_event_id = String(allow_none=True)
 
