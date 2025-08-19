@@ -12,7 +12,7 @@
 # is called from another folder
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-url=$2 
+url=$1
 if [ -z $url ] 
 then
 	url="http://localhost"
